@@ -1,0 +1,41 @@
+# macOS ilovasini (POLIZ Kalkulyatori.app) GitHubning Mac serverida yiğadi.
+# Tayyor ilova: Actions → eng söngi yiğiş → Artifacts → POLIZ-Kalkulyatori-macOS
+name: macOS ilovasi
+
+on:
+  push:
+    branches: [main, claude/pensive-rubin-lvo2am]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ilovani yiğiş va tekşiriş
+        run: ./build_mac.sh
+
+      - name: Oyna skrinşoti
+        continue-on-error: true
+        run: |
+          open "dist/POLIZ Kalkulyatori.app"
+          sleep 20
+          screencapture -x dist/screenshot.png
+          osascript -e 'quit app "POLIZ Kalkulyatori"' || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: POLIZ-Kalkulyatori-macOS
+          path: dist/POLIZ-Kalkulyatori-macOS.zip
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skrinsot
+          path: dist/screenshot.png
+          if-no-files-found: ignore

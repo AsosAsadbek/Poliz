@@ -12,12 +12,14 @@ aks holda — standart brauzerda oçiladi.
 
   python poliz_kalkulyator.py             # oyna
   python poliz_kalkulyator.py --browser   # majburan brauzerda
+  python poliz_kalkulyator.py --selftest  # yiğilgan ilovani tekşiriş (oyna oçilmaydi)
 """
 
 from __future__ import annotations
 
 import json
 import shutil
+import urllib.request
 import subprocess
 import sys
 import threading
@@ -29,7 +31,8 @@ from pathlib import Path
 from poliz import PolizError, calculate
 
 APP_TITLE = "POLIZ Kalkulyatori"
-UI_DIR = Path(__file__).resolve().with_name("ui")
+# .app (PyInstaller) içida fayllar sys._MEIPASS papkasida böladi
+UI_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / "ui"
 HISTORY_FILE = Path.home() / ".poliz_tarix.json"
 HISTORY_LIMIT = 100
 
@@ -165,9 +168,29 @@ def _restore_mac_shadow(window) -> None:
         pass
 
 
+def selftest(url: str) -> bool:
+    """Server, ui/ fayllari va hisoblaş ilova içida işlayotganini tekşiradi."""
+    page = urllib.request.urlopen(url, timeout=5).read().decode()
+    req = urllib.request.Request(url + "api/calculate", data=b'["(5+3)*2"]', method="POST")
+    result = json.loads(urllib.request.urlopen(req, timeout=5).read())
+    ok = APP_TITLE in page and result["result"]["value"] == "16"
+    try:
+        import webview  # noqa: F401
+        native = "bor"
+    except ImportError:
+        native = "YÖQ"
+    print(f"selftest: ui={'ok' if APP_TITLE in page else 'YÖQ'}, "
+          f"hisoblaş={result['result']['value']}, pywebview={native}")
+    return ok and native == "bor"
+
+
 def main():
     server = start_server()
     url = f"http://127.0.0.1:{server.server_address[1]}/"
+    if "--selftest" in sys.argv:
+        ok = selftest(url)
+        server.shutdown()
+        sys.exit(0 if ok else 1)
     try:
         if "--browser" in sys.argv or not _open_native(url):
             print(f"{APP_TITLE}: {url}")

@@ -31,6 +31,34 @@ Testlar:
 python3 -m unittest -v
 ```
 
+## macOS ilovasi (.app)
+
+Python örnatmasdan, Launchpad yoki Dockdan oçiladigan `POLIZ Kalkulyatori.app`.
+
+**1-yöl: tayyorini yuklab oliş.** GitHub Actions har bir push'da ilovani Mac serverida
+yiğadi. Uni şunday yuklab olasiz:
+
+1. Repodagi **Actions** bölimiga kiring.
+2. **macOS ilovasi** iş oqimining eng söngi yaşil yiğişini oçing.
+3. **Artifacts** böliminden `POLIZ-Kalkulyatori-macOS` ni yuklab oling.
+4. Arxivni oçing va `POLIZ Kalkulyatori.app` ni **Applications** papkasiga sudrab taşlang.
+
+Ilova Apple tomonidan imzolanmagani uçun macOS uni birinçi marta oçişga ruxsat bermaydi.
+Ruxsat beriş uçun **System Settings → Privacy & Security** bölimining pastida
+**Open Anyway** ni bosing. Yoki Terminalda bir marta quyidagini işga tuşiring:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/POLIZ Kalkulyatori.app"
+```
+
+**2-yöl: Macda özingiz yiğiş.** Bunda ogohlantiriş umuman çiqmaydi:
+
+```bash
+./build_mac.sh
+```
+
+Natija `dist/POLIZ Kalkulyatori.app` papkasida paydo böladi.
+
 ## Imkoniyatlar
 
 - **Özgaruvçili ifodalar**, PDFdagi kabi: `(A+B)*(C-D)/E` → `A B + C D - * E /`.
@@ -85,5 +113,7 @@ python3 -m unittest -v
 | `poliz_kalkulyator.py` | işga tuşiriş fayli |
 | `poliz.py` | mantiq: tokenlar, Shunting-yard, sonli va harfli hisoblaş, daraxt (interfeysga bogʼliq emas) |
 | `gui.py` | lokal server (`/api/...`) va pywebview oynasi |
+| `build_mac.sh`, `assets/icon.png` | macOS ilovasini yiğiş va uning ikonkasi |
+| `.github/workflows/build-mac.yml` | ilovani GitHubning Mac serverida avtomatik yiğiş |
 | `ui/` | interfeys: `index.html`, `style.css`, `app.js` |
 | `test_poliz.py` | testlar, jumladan PDFdagi barça misollar |
